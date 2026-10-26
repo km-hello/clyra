@@ -109,7 +109,7 @@ func SearchIcons(ctx context.Context, base *http.Client, key, query string) ([]I
 		item.Source = textutil.Truncate(item.Source, 200)
 		data = append(data, item)
 		seen[item.Original] = true
-		if len(data) == 24 {
+		if len(data) == 100 {
 			break
 		}
 	}

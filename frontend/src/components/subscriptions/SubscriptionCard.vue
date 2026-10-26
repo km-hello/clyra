@@ -143,7 +143,7 @@ function selectAction(key: string) {
                   :aria-label="`${subscription.name}（在新标签页打开）`"
                   class="group flex min-w-0 items-center gap-1 rounded-sm hover:text-primary hover:underline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary"
                   @click.stop
-                  ><span class="min-w-0 flex-1 truncate">{{ subscription.name }}</span>
+                  ><span class="min-w-0 truncate">{{ subscription.name }}</span>
                   <ExternalLink
                     :size="14"
                     aria-hidden="true"

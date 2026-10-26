@@ -182,14 +182,14 @@ func (a *Service) scheduledTick(ctx context.Context, now time.Time) error {
 	if strings.TrimSpace(a.Config.TelegramBotToken) == "" || s.TelegramChatID == nil {
 		return nil
 	}
-	rows, err := tx.Query(`SELECT name,next_payment FROM subscriptions WHERE status='active' AND notify_enabled=1 AND julianday(next_payment)-julianday(?) BETWEEN 0 AND COALESCE(reminder_days,?) ORDER BY next_payment ASC,id ASC`, today, s.DefaultReminderDays)
+	rows, err := tx.Query(`SELECT name,next_payment,amount_minor,currency FROM subscriptions WHERE status='active' AND notify_enabled=1 AND julianday(next_payment)-julianday(?) BETWEEN 0 AND COALESCE(reminder_days,?) ORDER BY next_payment ASC,id ASC`, today, s.DefaultReminderDays)
 	if err != nil {
 		return err
 	}
 	items := []integrations.ReminderItem{}
 	for rows.Next() {
 		var item integrations.ReminderItem
-		if err = rows.Scan(&item.Name, &item.NextPayment); err != nil {
+		if err = rows.Scan(&item.Name, &item.NextPayment, &item.AmountMinor, &item.Currency); err != nil {
 			break
 		}
 		items = append(items, item)

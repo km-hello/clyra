@@ -72,7 +72,7 @@ onBeforeUnmount(cancel)
 
 function showSearch() {
   if (props.disabled) return
-  query.value = `${props.name.trim()} logo`.trim().slice(0, 100)
+  query.value = props.name.trim().slice(0, 100)
   results.value = []
   searched.value = false
   errorMessage.value = ''
@@ -196,7 +196,7 @@ function select(item: ImageSearchItem) {
     content-scrollable
     title="搜索品牌图标"
     aria-label="搜索品牌图标"
-    style="width: min(640px, calc(100vw - 32px))"
+    style="width: min(800px, calc(100vw - 32px))"
   >
     <div class="space-y-4" @keydown.enter.stop="onSearchEnter">
       <div class="flex gap-3">
@@ -226,12 +226,14 @@ function select(item: ImageSearchItem) {
       <p v-else-if="searched && !results.length" role="status" class="text-sm text-muted">
         未找到图标，请更换关键词
       </p>
-      <div class="grid grid-cols-3 gap-3 sm:grid-cols-4">
+      <div
+        class="grid max-h-[min(692px,calc(100dvh-200px))] auto-rows-[164px] grid-cols-5 gap-3 overflow-y-auto"
+      >
         <button
           v-for="item in results"
           :key="item.original"
           type="button"
-          class="min-w-0 rounded-lg border border-default p-2 text-left hover:bg-accented focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-50"
+          class="min-w-0 rounded-lg border border-default p-2 text-left hover:bg-accented focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary disabled:opacity-50"
           :disabled="pending || selecting"
           :aria-label="`选择 ${item.title}`"
           @click="select(item)"
@@ -242,7 +244,7 @@ function select(item: ImageSearchItem) {
             alt=""
             loading="lazy"
             referrerpolicy="no-referrer"
-            class="aspect-square w-full rounded object-contain"
+            class="h-24 w-full rounded object-contain"
           />
           <span class="mt-2 block truncate text-sm" :title="item.title">{{ item.title }}</span>
           <span class="block truncate text-xs text-muted" :title="item.source">{{

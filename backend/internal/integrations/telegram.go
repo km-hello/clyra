@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"html"
 	"io"
 	"net/http"
 	"regexp"
@@ -19,6 +20,8 @@ import (
 type ReminderItem struct {
 	Name        string
 	NextPayment string
+	AmountMinor int64
+	Currency    string
 }
 
 var nameLineBreaks = regexp.MustCompile(`[\r\n\x{0085}\x{2028}\x{2029}]+`)
@@ -51,7 +54,7 @@ func FormatReminders(items []ReminderItem, today string) ([]string, error) {
 			due = fmt.Sprintf("已过期 %d 天", -days)
 		}
 		name := strings.NewReplacer("&", "&amp;", "<", "&lt;", ">", "&gt;", "\"", "&quot;").Replace(nameLineBreaks.ReplaceAllString(item.Name, " "))
-		entry := fmt.Sprintf("<b>%s</b>\n%s · %s", name, due, item.NextPayment)
+		entry := fmt.Sprintf("<b>%s</b> · %d.%02d %s\n%s · %s", name, item.AmountMinor/100, item.AmountMinor%100, html.EscapeString(item.Currency), due, item.NextPayment)
 		if textutil.Length(reserved+entry) > 4000 {
 			return nil, fmt.Errorf("单个提醒条目过长")
 		}
