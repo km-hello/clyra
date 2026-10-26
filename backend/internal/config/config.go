@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/joho/godotenv"
+
 	"clyra/backend/internal/textutil"
 )
 
@@ -19,6 +21,12 @@ type Config struct {
 }
 
 func Load() (Config, error) {
+	if env("CLYRA_ENV", "development") == "development" {
+		if err := godotenv.Load(".env"); err != nil && !os.IsNotExist(err) {
+			// Parser errors may contain secrets from the file.
+			return Config{}, fmt.Errorf("load .env: unable to read or parse file")
+		}
+	}
 	c := Config{Addr: env("CLYRA_ADDR", "127.0.0.1:8080"), StaticDir: env("CLYRA_STATIC_DIR", "./frontend/dist"), AppOrigin: os.Getenv("CLYRA_APP_ORIGIN"), SessionPassword: os.Getenv("CLYRA_SESSION_PASSWORD"), DatabasePath: env("CLYRA_DATABASE_PATH", "./data/clyra.db"), TelegramBotToken: os.Getenv("CLYRA_TELEGRAM_BOT_TOKEN"), SerpAPIKey: os.Getenv("CLYRA_SERP_API_KEY")}
 	mode := env("CLYRA_ENV", "development")
 	if mode != "development" && mode != "production" {
