@@ -31,7 +31,24 @@ func (a *API) searchIcons(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := integrations.SearchIcons(r.Context(), a.HTTPClient, a.config.SerpAPIKey, query)
+	source := "serpapi"
+	if raw, present := input["source"]; present {
+		if string(raw) == "null" || json.Unmarshal(raw, &source) != nil {
+			writeError(w, problem.Validation("source", "请选择有效的图标搜索来源"))
+			return
+		}
+	}
+	var data []integrations.ImageSearchItem
+	var err error
+	switch source {
+	case "serpapi":
+		data, err = integrations.SearchIcons(r.Context(), a.HTTPClient, a.config.SerpAPIKey, query)
+	case "selfhst", "dashboardicons":
+		data, err = a.iconCatalogs.Search(r.Context(), a.HTTPClient, source, query)
+	default:
+		writeError(w, problem.Validation("source", "请选择有效的图标搜索来源"))
+		return
+	}
 	if err != nil {
 		if failure, ok := err.(*integrations.SearchError); ok {
 			err = problem.New(failure.Status, failure.Message)
