@@ -24,5 +24,11 @@ export const settingsSchema = z.strictObject({
     .refine((value) => !value.includes('\0'), 'Chat ID 不能包含空字符')
     .transform((value) => value || null)
     .nullable(),
+  telegram_message_thread_id: z
+    .number({ error: 'Topic ID 须为 1–2147483647 的整数' })
+    .int('Topic ID 须为整数')
+    .min(1, 'Topic ID 不能小于 1')
+    .max(2147483647, 'Topic ID 不能超过 2147483647')
+    .nullable(),
   theme: z.enum(themeModes),
 })

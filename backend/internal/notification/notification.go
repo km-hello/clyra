@@ -137,7 +137,7 @@ func (a *Service) Test() (map[string]any, error) {
 		return nil, &problem.Error{Status: 400, Message: message, Data: map[string]any{"code": "NOTIFICATION_CONFIGURATION_ERROR", "run_id": id}}
 	}
 	// Browser disconnects do not cancel delivery, but application shutdown does.
-	result := integrations.SendTelegram(a.Context, a.HTTPClient, a.Config.TelegramBotToken, *s.TelegramChatID, []string{"<b>Clyra 测试消息</b>\n\nTelegram 通知连接测试。"}, false)
+	result := integrations.SendTelegram(a.Context, a.HTTPClient, a.Config.TelegramBotToken, *s.TelegramChatID, s.TelegramMessageThreadID, []string{"<b>Clyra 测试消息</b>\n\nTelegram 通知连接测试。"}, false)
 	status := "succeeded"
 	if result.ErrorMessage != nil {
 		status = "failed"
@@ -221,7 +221,7 @@ func (a *Service) scheduledTick(ctx context.Context, now time.Time) error {
 		message := uncertainFailure
 		return a.finishNotification(id, started, "failed", len(items), 0, &message)
 	}
-	result := integrations.SendTelegram(ctx, a.HTTPClient, a.Config.TelegramBotToken, *s.TelegramChatID, messages, true)
+	result := integrations.SendTelegram(ctx, a.HTTPClient, a.Config.TelegramBotToken, *s.TelegramChatID, s.TelegramMessageThreadID, messages, true)
 	status := "succeeded"
 	if result.ErrorMessage != nil {
 		status = "failed"

@@ -111,7 +111,7 @@ func retrySeconds(payload map[string]json.RawMessage, header string, fallback in
 	}
 	return int64(fallback)
 }
-func SendTelegram(ctx context.Context, base *http.Client, token string, chatID string, messages []string, automatic bool) TelegramResult {
+func SendTelegram(ctx context.Context, base *http.Client, token string, chatID string, messageThreadID *int64, messages []string, automatic bool) TelegramResult {
 	count := 0
 	if strings.TrimSpace(token) == "" || strings.TrimSpace(chatID) == "" {
 		return telegramFailure(count, "Telegram 通知配置不完整")
@@ -119,7 +119,11 @@ func SendTelegram(ctx context.Context, base *http.Client, token string, chatID s
 	client := externalClient(base)
 	for _, text := range messages {
 		for attempt := 1; attempt <= 3; attempt++ {
-			data, _ := json.Marshal(map[string]any{"chat_id": chatID, "text": text, "parse_mode": "HTML"})
+			requestPayload := map[string]any{"chat_id": chatID, "text": text, "parse_mode": "HTML"}
+			if messageThreadID != nil {
+				requestPayload["message_thread_id"] = *messageThreadID
+			}
+			data, _ := json.Marshal(requestPayload)
 			requestCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 			req, err := http.NewRequestWithContext(requestCtx, http.MethodPost, "https://api.telegram.org/bot"+token+"/sendMessage", bytes.NewReader(data))
 			if err != nil {

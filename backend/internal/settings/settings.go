@@ -11,17 +11,18 @@ import (
 )
 
 type Settings struct {
-	SchedulerEnabled    bool    `json:"scheduler_enabled"`
-	DefaultReminderDays int64   `json:"default_reminder_days"`
-	Timezone            string  `json:"timezone"`
-	NotificationTime    string  `json:"notification_time"`
-	TelegramChatID      *string `json:"telegram_chat_id"`
-	Theme               string  `json:"theme"`
+	SchedulerEnabled        bool    `json:"scheduler_enabled"`
+	DefaultReminderDays     int64   `json:"default_reminder_days"`
+	Timezone                string  `json:"timezone"`
+	NotificationTime        string  `json:"notification_time"`
+	TelegramChatID          *string `json:"telegram_chat_id"`
+	TelegramMessageThreadID *int64  `json:"telegram_message_thread_id"`
+	Theme                   string  `json:"theme"`
 }
 
 func Read(q interface{ QueryRow(string, ...any) *sql.Row }) (Settings, error) {
 	var s Settings
-	err := q.QueryRow(`SELECT scheduler_enabled,default_reminder_days,timezone,notification_time,telegram_chat_id,theme FROM settings WHERE id=1`).Scan(&s.SchedulerEnabled, &s.DefaultReminderDays, &s.Timezone, &s.NotificationTime, &s.TelegramChatID, &s.Theme)
+	err := q.QueryRow(`SELECT scheduler_enabled,default_reminder_days,timezone,notification_time,telegram_chat_id,telegram_message_thread_id,theme FROM settings WHERE id=1`).Scan(&s.SchedulerEnabled, &s.DefaultReminderDays, &s.Timezone, &s.NotificationTime, &s.TelegramChatID, &s.TelegramMessageThreadID, &s.Theme)
 	return s, err
 }
 
@@ -42,7 +43,7 @@ func Patch(db *sql.DB, input map[string]json.RawMessage) (Settings, error) {
 	}
 	for k, v := range input {
 		invalid := func(message string) error { return problem.Validation(k, message) }
-		if string(v) == "null" && k != "telegram_chat_id" {
+		if string(v) == "null" && k != "telegram_chat_id" && k != "telegram_message_thread_id" {
 			return Settings{}, invalid("字段不能为空")
 		}
 		switch k {
@@ -83,6 +84,10 @@ func Patch(db *sql.DB, input map[string]json.RawMessage) (Settings, error) {
 					s.TelegramChatID = nil
 				}
 			}
+		case "telegram_message_thread_id":
+			if json.Unmarshal(v, &s.TelegramMessageThreadID) != nil || (s.TelegramMessageThreadID != nil && (*s.TelegramMessageThreadID < 1 || *s.TelegramMessageThreadID > 2147483647)) {
+				return Settings{}, invalid("Topic ID 必须为 1–2147483647 的整数")
+			}
 		case "theme":
 			if json.Unmarshal(v, &s.Theme) != nil || (s.Theme != "system" && s.Theme != "light" && s.Theme != "dark") {
 				return Settings{}, invalid("请选择有效的主题")
@@ -91,7 +96,7 @@ func Patch(db *sql.DB, input map[string]json.RawMessage) (Settings, error) {
 			return Settings{}, invalid("不支持的设置字段")
 		}
 	}
-	_, err = tx.Exec(`UPDATE settings SET scheduler_enabled=?,default_reminder_days=?,timezone=?,notification_time=?,telegram_chat_id=?,theme=?,updated_at=? WHERE id=1`, s.SchedulerEnabled, s.DefaultReminderDays, s.Timezone, s.NotificationTime, s.TelegramChatID, s.Theme, time.Now().UnixMilli())
+	_, err = tx.Exec(`UPDATE settings SET scheduler_enabled=?,default_reminder_days=?,timezone=?,notification_time=?,telegram_chat_id=?,telegram_message_thread_id=?,theme=?,updated_at=? WHERE id=1`, s.SchedulerEnabled, s.DefaultReminderDays, s.Timezone, s.NotificationTime, s.TelegramChatID, s.TelegramMessageThreadID, s.Theme, time.Now().UnixMilli())
 	if err == nil {
 		err = tx.Commit()
 	}

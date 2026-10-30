@@ -10,7 +10,7 @@ import (
 )
 
 func (a *API) settingsResponse(s settings.Settings) map[string]any {
-	return map[string]any{"default_reminder_days": s.DefaultReminderDays, "timezone": s.Timezone, "notification_time": s.NotificationTime, "telegram_chat_id": s.TelegramChatID, "theme": s.Theme, "bot_configured": strings.TrimSpace(a.config.TelegramBotToken) != "", "scheduler_enabled": s.SchedulerEnabled}
+	return map[string]any{"default_reminder_days": s.DefaultReminderDays, "timezone": s.Timezone, "notification_time": s.NotificationTime, "telegram_chat_id": s.TelegramChatID, "telegram_message_thread_id": s.TelegramMessageThreadID, "theme": s.Theme, "bot_configured": strings.TrimSpace(a.config.TelegramBotToken) != "", "scheduler_enabled": s.SchedulerEnabled}
 }
 func (a *API) getSettings(w http.ResponseWriter, r *http.Request) {
 	s, err := settings.Read(a.db)

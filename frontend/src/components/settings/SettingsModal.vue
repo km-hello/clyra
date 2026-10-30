@@ -69,6 +69,7 @@ async function load() {
       timezone,
       notification_time,
       telegram_chat_id,
+      telegram_message_thread_id,
     } = response.data
     draft.value = {
       scheduler_enabled,
@@ -76,6 +77,7 @@ async function load() {
       timezone,
       notification_time,
       telegram_chat_id,
+      telegram_message_thread_id,
     }
   } catch {
     if (!request.signal.aborted) loadError.value = '设置加载失败'
@@ -289,33 +291,61 @@ async function save() {
               <span id="reminder-notification_time-error">{{ errors.notification_time }}</span>
             </template>
           </NFormItem>
-          <NFormItem
-            label="Telegram Chat ID"
-            path="telegram_chat_id"
-            :label-props="{ for: 'reminder-telegram_chat_id' }"
-            :validation-status="errors.telegram_chat_id ? 'error' : undefined"
-          >
-            <NInput
-              :value="draft.telegram_chat_id ?? ''"
-              :input-props="{
-                id: 'reminder-telegram_chat_id',
-                'aria-label': 'Telegram Chat ID',
-                'aria-invalid': !!errors.telegram_chat_id,
-                'aria-describedby': errors.telegram_chat_id
-                  ? 'reminder-telegram_chat_id-error'
-                  : undefined,
-              }"
-              placeholder="-1001234567890"
-              @update:value="
-                (value) => {
-                  if (draft) draft.telegram_chat_id = value || null
-                }
-              "
-            />
-            <template v-if="errors.telegram_chat_id" #feedback>
-              <span id="reminder-telegram_chat_id-error">{{ errors.telegram_chat_id }}</span>
-            </template>
-          </NFormItem>
+          <div class="grid grid-cols-1 gap-x-4 min-[480px]:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+            <NFormItem
+              label="Telegram Chat ID"
+              path="telegram_chat_id"
+              :label-props="{ for: 'reminder-telegram_chat_id' }"
+              :validation-status="errors.telegram_chat_id ? 'error' : undefined"
+            >
+              <NInput
+                :value="draft.telegram_chat_id ?? ''"
+                :input-props="{
+                  id: 'reminder-telegram_chat_id',
+                  'aria-label': 'Telegram Chat ID',
+                  'aria-invalid': !!errors.telegram_chat_id,
+                  'aria-describedby': errors.telegram_chat_id
+                    ? 'reminder-telegram_chat_id-error'
+                    : undefined,
+                }"
+                placeholder="-1001234567890"
+                @update:value="
+                  (value) => {
+                    if (draft) draft.telegram_chat_id = value || null
+                  }
+                "
+              />
+              <template v-if="errors.telegram_chat_id" #feedback>
+                <span id="reminder-telegram_chat_id-error">{{ errors.telegram_chat_id }}</span>
+              </template>
+            </NFormItem>
+            <NFormItem
+              label="Telegram Topic ID"
+              path="telegram_message_thread_id"
+              :label-props="{ for: 'reminder-telegram_message_thread_id' }"
+              :validation-status="errors.telegram_message_thread_id ? 'error' : undefined"
+            >
+              <NInputNumber
+                v-model:value="draft.telegram_message_thread_id"
+                placeholder="123"
+                :show-button="false"
+                class="w-full"
+                :input-props="{
+                  id: 'reminder-telegram_message_thread_id',
+                  'aria-label': 'Telegram Topic ID',
+                  'aria-invalid': !!errors.telegram_message_thread_id,
+                  'aria-describedby': errors.telegram_message_thread_id
+                    ? 'reminder-telegram_message_thread_id-error'
+                    : undefined,
+                }"
+              />
+              <template v-if="errors.telegram_message_thread_id" #feedback>
+                <span id="reminder-telegram_message_thread_id-error">{{
+                  errors.telegram_message_thread_id
+                }}</span>
+              </template>
+            </NFormItem>
+          </div>
         </NForm>
       </template>
       <NotificationPanel
